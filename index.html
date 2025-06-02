@@ -51,17 +51,106 @@
   <footer><p>&copy; Rutas Ocultas 2025</p></footer>
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
-    window.addEventListener('load',()=>{
-      const map=L.map('map').setView([40.4168,-3.7038],13);
+    window.addEventListener('load',() => {
+      const map = L.map('map').setView([40.4168, -3.7038], 13);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap'}).addTo(map);
-      const toRad=deg=>deg*Math.PI/180;
-      function haversine(lat1,lon1,lat2,lon2){const R=6371e3;const φ1=toRad(lat1),φ2=toRad(lat2),Δφ=toRad(lat2-lat1),Δλ=toRad(lon2-lon1);const a=Math.sin(Δφ/2)**2+Math.cos(φ1)*Math.cos(φ2)*Math.sin(Δλ/2)**2;const c=2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));return R*c;}
-      async function fetchDescription(p){if(!p.tags?.wikipedia)return'';const [lang,title]=p.tags.wikipedia.split(':');try{const url=`https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`;const d=await fetch(url).then(r=>r.json());return d.extract||'';}catch{return''}}
-      async function geocode(city){const url=`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(city)}`;const d=await fetch(url).then(r=>r.json());return d[0];}
-      async function fetchPOIs(lat,lon,interest,rad){const filt={history:'[historic~"castle|memorial|monument|ruins|fort"]',street_art:'[tourism=artwork]',nature:'[leisure~"park|garden"]'};const common='[tourism~"museum|attraction|viewpoint"]';const tag=filt[interest]||'';const q=`[out:json][timeout:25];(node(around:${rad},${lat},${lon})${tag}[name];node(around:${rad},${lat},${lon})${common}[name];);out body 50;`;const r=await fetch('https://overpass-api.de/api/interpreter',{method:'POST',body:q}).then(r=>r.json());return r.elements;}
-      function buildRoute(pois,base,dur){const bLat=parseFloat(base.lat),bLon=parseFloat(base.lon);const weight=p=>{const t=p.tags||{};if(t.museum||t.tourism==='museum'||t.historic)return 0;if(t.tourism==='attraction')return 1;return 2;};pois.forEach(p=>{p._dist=haversine(bLat,bLon,p.lat,p.lon);});pois.sort((a,b)=>{const wa=weight(a),wb=weight(b);if(wa!==wb)return wa-wb;return a._dist-b._dist;});const walkingSpeed=5000;let timeAcc=0,prevLat=bLat,prevLon=bLon;const route=[{lat:bLat,lon:bLon,name:'Punto de inicio',tags:{}}];for(const p of pois){const d=haversine(prevLat,prevLon,p.lat,p.lon);const t=d/walkingSpeed;if(timeAcc+t<=dur){route.push({lat:p.lat,lon:p.lon,name:p.tags.name,tags:p.tags});timeAcc+=t;prevLat=p.lat;prevLon=p.lon;}}return route;}
-      function drawRoute(map,pts){map.eachLayer(l=>{if(l instanceof L.Marker||l instanceof L.Polyline)map.removeLayer(l);});const ll=pts.map(p=>[+p.lat,+p.lon]);L.polyline(ll,{color:'#ff0066'}).addTo(map);pts.forEach(p=>L.marker([p.lat,p.lon]).addTo(map).bindPopup(p.name));map.fitBounds(ll,{padding:[20,20]});}
-      document.getElementById('form').addEventListener('submit',async e=>{e.preventDefault();const city=document.getElementById('city').value.trim(),interest=document.getElementById('interest').value,dur=parseInt(document.getElementById('duration').value,10);try{const base=await geocode(city);if(!base)throw new Error('Ciudad no encontrada');let rad=dur*1500;let pois=await fetchPOIs(base.lat,base.lon,interest,rad);if(pois.length<dur*3){rad*=2;pois=await fetchPOIs(base.lat,base.lon,interest,rad);}if(!pois.length)throw new Error('Sin puntos de interés');const route=buildRoute(pois,base,dur);drawRoute(map,route);const sum=document.getElementById('summary');sum.innerHTML='<p>Cargando...</p>';const items=await Promise.all(route.map(async(p,i)=>{if(i===0)return`<li><strong>Inicio:</strong> ${p.name}</li>`;const d=await fetchDescription(p);return`<li><strong>Parada ${i}:</strong> ${p.name}<br><em>${d}</em></li>`;}));sum.innerHTML=`<ul>${items.join('')}</ul>`;}catch(err){alert(err.message);}});
+      const toRad = deg => deg * Math.PI / 180;
+      function haversine(lat1,lon1,lat2,lon2){
+        const R = 6371e3;
+        const φ1 = toRad(lat1), φ2 = toRad(lat2);
+        const Δφ = toRad(lat2 - lat1), Δλ = toRad(lon2 - lon1);
+        const a = Math.sin(Δφ/2)**2 + Math.cos(φ1)*Math.cos(φ2)*Math.sin(Δλ/2)**2;
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+      }
+      async function fetchDescription(p){
+        if(!p.tags?.wikipedia) return '';
+        const [lang, title] = p.tags.wikipedia.split(':');
+        try {
+          const url = `https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`;
+          const d = await fetch(url).then(r => r.json());
+          return d.extract || '';
+        } catch { return ''; }
+      }
+      async function geocode(city){
+        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(city)}`;
+        const d = await fetch(url).then(r => r.json());
+        return d[0];
+      }
+      async function fetchPOIs(lat,lon,interest,rad){
+        const filt = {
+          history: '[historic~"castle|memorial|monument|ruins|fort"]',
+          street_art: '[tourism=artwork]',
+          nature: '[leisure~"park|garden"]'
+        };
+        const common = '[tourism~"museum|attraction|viewpoint"]';
+        const tag = filt[interest] || '';
+        const q = `
+          [out:json][timeout:25];
+          (node(around:${rad},${lat},${lon})${tag}[name];
+           node(around:${rad},${lat},${lon})${common}[name];
+          );
+          out body 50;
+        `;
+        const r = await fetch('https://overpass-api.de/api/interpreter',{method:'POST',body:q}).then(r => r.json());
+        return r.elements;
+      }
+      function buildRoute(pois, base, dur){
+        const bLat = parseFloat(base.lat), bLon = parseFloat(base.lon);
+        const weight = p => {
+          const t = p.tags || {};
+          if(t.museum || t.tourism==='museum' || t.historic) return 0;
+          if(t.tourism==='attraction') return 1;
+          return 2;
+        };
+        pois.forEach(p => { p._dist = haversine(bLat,bLon,p.lat,p.lon); });
+        pois.sort((a,b) => { const wa = weight(a), wb = weight(b); if(wa!==wb) return wa-wb; return a._dist - b._dist; });
+        const walkingSpeed = 5000;
+        let timeAcc = 0, prevLat = bLat, prevLon = bLon;
+        const route = [{lat:bLat,lon:bLon,name:base.display_name,tags:{}}];
+        for(const p of pois){
+          const d = haversine(prevLat, prevLon, p.lat, p.lon);
+          const t = d / walkingSpeed;
+          if(timeAcc + t <= dur){
+            route.push({lat:p.lat, lon:p.lon, name:p.tags.name, tags:p.tags});
+            timeAcc += t;
+            prevLat = p.lat;
+            prevLon = p.lon;
+          }
+        }
+        return route;
+      }
+      function drawRoute(map, pts){
+        map.eachLayer(l => { if(l instanceof L.Marker || l instanceof L.Polyline) map.removeLayer(l); });
+        const ll = pts.map(p => [ +p.lat, +p.lon ]);
+        L.polyline(ll, {color:'#ff0066'}).addTo(map);
+        pts.forEach(p => L.marker([p.lat,p.lon]).addTo(map).bindPopup(p.name));
+        map.fitBounds(ll, {padding:[20,20]});
+      }
+      document.getElementById('form').addEventListener('submit', async e => {
+        e.preventDefault();
+        const city = document.getElementById('city').value.trim();
+        const interest = document.getElementById('interest').value;
+        const dur = parseInt(document.getElementById('duration').value, 10);
+        try{
+          const base = await geocode(city);
+          if(!base) throw new Error('Ciudad no encontrada');
+          let rad = dur * 1500;
+          let pois = await fetchPOIs(base.lat, base.lon, interest, rad);
+          if(pois.length < dur * 3){ rad *= 2; pois = await fetchPOIs(base.lat, base.lon, interest, rad); }
+          if(!pois.length) throw new Error('Sin puntos de interés');
+          const route = buildRoute(pois, base, dur);
+          drawRoute(map, route);
+          const sum = document.getElementById('summary');
+          sum.innerHTML = '<p>Cargando...</p>';
+          const items = await Promise.all(route.map(async(p,i) => {
+            if(i === 0) return `<li><strong>Punto de salida:</strong> ${p.name}</li>`;
+            const desc = await fetchDescription(p);
+            return `<li><strong>Parada ${i}:</strong> ${p.name}<br><em>${desc}</em></li>`;
+          }));
+          sum.innerHTML = `<ul>${items.join('')}</ul>`;
+        }catch(err){ alert(err.message); }
+      });
     });
   </script>
 </body>
