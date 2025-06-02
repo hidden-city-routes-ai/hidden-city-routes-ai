@@ -1,115 +1,153 @@
-// 1. Inicializar mapa centrado en Madrid por defecto
-const map = L.map('map').setView([40.4168, -3.7038], 13);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '© OpenStreetMap'
-}).addTo(map);
-
-// 2. Función para geocodificar ciudad usando Nominatim
-async function geocode(city) {
-  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(city)}`;
-  const data = await fetch(url).then(res => res.json());
-  return data[0]; // { lat, lon, display_name } del primer resultado
+:root {
+  --primary-color: #1e3a5f;
+  --accent-color: #ff0066;
+  --bg-light: #f9f9f9;
+  --text-dark: #333333;
+  --text-light: #ffffff;
 }
 
-// 3. Función para pedir POIs a Overpass
-async function fetchPOIs(lat, lon, interest, radius) {
-  // Mapea el parámetro interest a un tag de OSM
-  const tag = {
-    history: 'tourism=attraction',
-    street_art: 'tourism=artwork',
-    nature: 'leisure=park'
-  }[interest];
-
-  // Construye la consulta Overpass
-  const query = `
-    [out:json][timeout:25];
-    node(around:${radius},${lat},${lon})[${tag}][name];
-    out body 30;
-  `;
-
-  const url = 'https://overpass-api.de/api/interpreter';
-  const response = await fetch(url, {
-    method: 'POST',
-    body: query
-  });
-  const result = await response.json();
-  return result.elements; // array de nodos con {lat, lon, tags.name, ...}
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-light);
+  color: var(--text-dark);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.6;
 }
 
-// 4. Algoritmo de ordenación simple por proximidad euclídea y ajuste por duración
-function buildRoute(pois, base, duration) {
-  // Convierte base.lat/lon a número
-  const baseLat = parseFloat(base.lat);
-  const baseLon = parseFloat(base.lon);
-
-  // Ordenar POIs por distancia al punto de inicio
-  pois.sort((a, b) => {
-    const da = (a.lat - baseLat) ** 2 + (a.lon - baseLon) ** 2;
-    const db = (b.lat - baseLat) ** 2 + (b.lon - baseLon) ** 2;
-    return da - db;
-  });
-
-  // Definir cuántos lugares mostrar según duración:
-  // 1 hora → 3 paradas ; 2 horas → 6 paradas ; 3 horas → 9 paradas
-  const stopsCount = duration * 3;
-
-  // Toma los primeros stopsCount puntos y añade el punto de inicio al principio
-  const slice = pois.slice(0, stopsCount).map(p => ({
-    lat: p.lat,
-    lon: p.lon,
-    name: p.tags.name
-  }));
-
-  return [{ lat: baseLat, lon: baseLon, name: 'Punto de inicio' }, ...slice];
+header {
+  text-align: center;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
 }
 
-// 5. Dibuja la ruta y los marcadores en el mapa
-function drawRoute(points) {
-  // Limpia marcadores y polilíneas previos
-  map.eachLayer(layer => {
-    if (layer instanceof L.Marker || layer instanceof L.Polyline) {
-      map.removeLayer(layer);
-    }
-  });
-
-  const latlngs = points.map(p => [parseFloat(p.lat), parseFloat(p.lon)]);
-  L.polyline(latlngs, { color: '#ff0066' }).addTo(map);
-
-  points.forEach((p, i) => {
-    const marker = L.marker([p.lat, p.lon]).addTo(map);
-    marker.bindPopup(i === 0 ? p.name : p.name);
-  });
-
-  map.fitBounds(latlngs);
+h1 {
+  color: var(--primary-color);
+  font-size: 2rem;
+  margin-bottom: 0.25rem;
 }
 
-// 6. Conecta el formulario al flujo completo
-document.getElementById('form').addEventListener('submit', async e => {
-  e.preventDefault();
-  const city = document.getElementById('city').value.trim();
-  const interest = document.getElementById('interest').value;
-  const duration = parseInt(document.getElementById('duration').value, 10);
+.subtitle {
+  font-size: 1rem;
+  color: var(--text-dark);
+  opacity: 0.8;
+}
 
-  // 6.1 Geocode
-  const base = await geocode(city);
-  const radius = duration * 1500; // aprox 1 km → 1500 m por hora a pie
+main {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
 
-  // 6.2 Traer POIs
-  const pois = await fetchPOIs(base.lat, base.lon, interest, radius);
+.form-section {
+  background: var(--text-light);
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1.5rem;
+}
 
-  // 6.3 Generar ruta con más paradas según duración
-  const route = buildRoute(pois, base, duration);
+#form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  align-items: flex-end;
+}
 
-  // 6.4 Dibujar en el mapa
-  drawRoute(route);
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
 
-  // 6.5 Mostrar listado con nombres en #summary
-  const summaryEl = document.getElementById('summary');
-  // Crear un <ul> con cada punto
-  let html = '<ul>';
-  route.forEach((p, i) => {
-    html += `<li><strong>${i === 0 ? 'Inicio' : 'Parada ' + i}:</strong> ${p.name}</li>`;
-  });
-  html += '</ul>';
-  summaryEl.innerHTML = html;
-});
+.full-width {
+  grid-column: span 2;
+}
+
+label {
+  margin-bottom: 0.25rem;
+  font-weight: bold;
+}
+
+input,
+select {
+  padding: 0.5rem;
+  border: 1px solid #cccccc;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+button {
+  background-color: var(--primary-color);
+  color: var(--text-light);
+  border: none;
+  padding: 0.75rem;
+  font-size: 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #163151;
+}
+
+.map-section {
+  margin-bottom: 1.5rem;
+}
+
+#map {
+  width: 100%;
+  height: 60vh;
+  min-height: 300px;
+  border: 2px solid var(--primary-color);
+  border-radius: 8px;
+  background-color: #eaeaea;
+}
+
+.summary-section {
+  background: var(--text-light);
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+}
+
+.summary-section h2 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  color: var(--primary-color);
+  font-size: 1.25rem;
+}
+
+.route-list ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+}
+
+.route-list li {
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+}
+
+footer {
+  text-align: center;
+  padding: 1rem 0;
+  background-color: #ffffff;
+  border-top: 1px solid #eeeeee;
+  font-size: 0.9rem;
+  color: #666666;
+}
+
+@media (max-width: 600px) {
+  #form {
+    grid-template-columns: 1fr;
+  }
+  .full-width {
+    grid-column: span 1;
+  }
+  h1 {
+    font-size: 1.5rem;
+  }
+  #map {
+    height: 50vh;
+  }
+}
