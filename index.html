@@ -103,20 +103,17 @@
           if(t.tourism==='attraction') return 1;
           return 2;
         };
-        pois.forEach(p => { p._dist = haversine(bLat,bLon,p.lat,p.lon); });
-        pois.sort((a,b) => { const wa = weight(a), wb = weight(b); if(wa!==wb) return wa-wb; return a._dist - b._dist; });
-        const walkingSpeed = 5000;
-        let timeAcc = 0, prevLat = bLat, prevLon = bLon;
-        const route = [{lat:bLat,lon:bLon,name:base.display_name,tags:{}}];
-        for(const p of pois){
-          const d = haversine(prevLat, prevLon, p.lat, p.lon);
-          const t = d / walkingSpeed;
-          if(timeAcc + t <= dur){
-            route.push({lat:p.lat, lon:p.lon, name:p.tags.name, tags:p.tags});
-            timeAcc += t;
-            prevLat = p.lat;
-            prevLon = p.lon;
-          }
+        pois.forEach(p => { p._dist = haversine(bLat,bLon,p.lat,p.lon); p._weight = weight(p); });
+        pois.sort((a,b) => a._weight - b._weight || a._dist - b._dist);
+        const maxStops = dur * 3;
+        const selected = pois.slice(0, maxStops).map(p => ({ lat: p.lat, lon: p.lon, name: p.tags.name, tags: p.tags }));
+        const route = [{ lat: bLat, lon: bLon, name: base.display_name, tags: {} }];
+        let prevLat = bLat, prevLon = bLon;
+        while(selected.length){
+          selected.sort((a,b) => haversine(prevLat, prevLon, a.lat, a.lon) - haversine(prevLat, prevLon, b.lat, b.lon));
+          const next = selected.shift();
+          route.push(next);
+          prevLat = next.lat; prevLon = next.lon;
         }
         return route;
       }
