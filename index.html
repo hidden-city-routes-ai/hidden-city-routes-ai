@@ -5,172 +5,37 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Rutas Ocultas</title>
 
-  <!-- Pico.css para estilos básicos y responsive -->
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/@picostyle/pico@latest/css/pico.min.css"
-  />
-
-  <!-- Leaflet CSS (para el mapa) -->
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet/dist/leaflet.css"
-  />
-
+  <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <style>
     :root {
-      --primary-color: #1e3a5f;
-      --accent-color: #ff0066;
-      --bg-light: #f9f9f9;
-      --text-dark: #333333;
-      --text-light: #ffffff;
+      --primary-color:#1e3a5f;
+      --accent-color:#ff0066;
+      --bg-light:#f9f9f9;
+      --text-dark:#333;
+      --text-light:#fff;
     }
-
-    body {
-      margin: 0;
-      padding: 0;
-      background-color: var(--bg-light);
-      color: var(--text-dark);
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      line-height: 1.6;
-    }
-
-    header {
-      text-align: center;
-      margin-top: 1rem;
-      margin-bottom: 1rem;
-    }
-
-    h1 {
-      color: var(--primary-color);
-      font-size: 2rem;
-      margin-bottom: 0.25rem;
-    }
-
-    .subtitle {
-      font-size: 1rem;
-      color: var(--text-dark);
-      opacity: 0.8;
-    }
-
-    main {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 0 1rem;
-    }
-
-    .form-section {
-      background: var(--text-light);
-      padding: 1rem;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      margin-bottom: 1.5rem;
-    }
-
-    #form {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-      align-items: flex-end;
-    }
-
-    .form-group {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .full-width {
-      grid-column: span 2;
-    }
-
-    label {
-      margin-bottom: 0.25rem;
-      font-weight: bold;
-    }
-
-    input,
-    select {
-      padding: 0.5rem;
-      border: 1px solid #cccccc;
-      border-radius: 4px;
-      font-size: 1rem;
-    }
-
-    button {
-      background-color: var(--primary-color);
-      color: var(--text-light);
-      border: none;
-      padding: 0.75rem;
-      font-size: 1rem;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #163151;
-    }
-
-    .map-section {
-      margin-bottom: 1.5rem;
-    }
-
-    #map {
-      width: 100%;
-      height: 60vh;
-      min-height: 300px;
-      border: 2px solid var(--primary-color);
-      border-radius: 8px;
-      background-color: #eaeaea;
-    }
-
-    .summary-section {
-      background: var(--text-light);
-      padding: 1rem;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      margin-bottom: 2rem;
-    }
-
-    .summary-section h2 {
-      margin-top: 0;
-      margin-bottom: 0.5rem;
-      color: var(--primary-color);
-      font-size: 1.25rem;
-    }
-
-    .route-list ul {
-      list-style-type: disc;
-      padding-left: 1.5rem;
-    }
-
-    .route-list li {
-      margin-bottom: 0.5rem;
-      font-size: 1rem;
-    }
-
-    footer {
-      text-align: center;
-      padding: 1rem 0;
-      background-color: #ffffff;
-      border-top: 1px solid #eeeeee;
-      font-size: 0.9rem;
-      color: #666666;
-    }
-
-    @media (max-width: 600px) {
-      #form {
-        grid-template-columns: 1fr;
-      }
-      .full-width {
-        grid-column: span 1;
-      }
-      h1 {
-        font-size: 1.5rem;
-      }
-      #map {
-        height: 50vh;
-      }
-    }
+    body{margin:0;background:var(--bg-light);color:var(--text-dark);font-family:"Segoe UI",Tahoma,Geneva,Verdana,sans-serif;line-height:1.6}
+    header{text-align:center;margin:1rem 0}
+    h1{color:var(--primary-color);font-size:2rem;margin:.25rem 0}
+    .subtitle{font-size:1rem;opacity:.8}
+    main{max-width:800px;margin:auto;padding:0 1rem}
+    .form-section{background:var(--text-light);padding:1rem;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,.1);margin-bottom:1.5rem}
+    #form{display:grid;grid-template-columns:1fr 1fr;gap:1rem;align-items:end}
+    .form-group{display:flex;flex-direction:column}
+    .full-width{grid-column:span 2}
+    label{margin-bottom:.25rem;font-weight:700}
+    input,select{padding:.5rem;border:1px solid #ccc;border-radius:4px;font-size:1rem}
+    button{background:var(--primary-color);color:var(--text-light);border:0;padding:.75rem;font-size:1rem;border-radius:4px;cursor:pointer}
+    button:hover{background:#163151}
+    .map-section{margin-bottom:1.5rem}
+    #map{width:100%;height:60vh;min-height:300px;border:2px solid var(--primary-color);border-radius:8px;background:#eaeaea}
+    .summary-section{background:var(--text-light);padding:1rem;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,.1);margin-bottom:2rem}
+    .summary-section h2{margin:0 0 .5rem;color:var(--primary-color);font-size:1.25rem}
+    .route-list ul{list-style:disc;padding-left:1.5rem}
+    .route-list li{margin-bottom:.5rem;font-size:1rem}
+    footer{text-align:center;padding:1rem 0;background:#fff;border-top:1px solid #eee;font-size:.9rem;color:#666}
+    @media(max-width:600px){#form{grid-template-columns:1fr}.full-width{grid-column:span 1}h1{font-size:1.5rem}#map{height:50vh}}
   </style>
 </head>
 <body>
@@ -178,185 +43,31 @@
     <h1>Rutas Ocultas</h1>
     <p class="subtitle">Descubre itinerarios poco conocidos en cualquier ciudad</p>
   </header>
-
   <main>
-    <!-- FORMULARIO -->
     <section class="form-section">
       <form id="form">
-        <div class="form-group">
-          <label for="city">Ciudad:</label>
-          <input id="city" placeholder="Ej. Santander" required />
-        </div>
-        <div class="form-group">
-          <label for="interest">Tipo de ruta:</label>
-          <select id="interest">
-            <option value="history">Historia</option>
-            <option value="street_art">Arte urbano</option>
-            <option value="nature">Naturaleza</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="duration">Duración aproximada:</label>
-          <select id="duration">
-            <option value="1">1 hora</option>
-            <option value="2">2 horas</option>
-            <option value="3">3 horas</option>
-          </select>
-        </div>
-        <div class="form-group full-width">
-          <button id="generate" type="submit">Generar ruta</button>
-        </div>
+        <div class="form-group"><label for="city">Ciudad:</label><input id="city" placeholder="Ej. Santander" required /></div>
+        <div class="form-group"><label for="interest">Tipo de ruta:</label><select id="interest"><option value="history">Historia</option><option value="street_art">Arte urbano</option><option value="nature">Naturaleza</option></select></div>
+        <div class="form-group"><label for="duration">Duración aproximada:</label><select id="duration"><option value="1">1 hora</option><option value="2">2 horas</option><option value="3">3 horas</option></select></div>
+        <div class="form-group full-width"><button id="generate" type="submit">Generar ruta</button></div>
       </form>
     </section>
-
-    <!-- MAPA -->
-    <section class="map-section">
-      <div id="map"></div>
-    </section>
-
-    <!-- RESUMEN -->
-    <section class="summary-section">
-      <h2>Resumen de la ruta</h2>
-      <div id="summary" class="route-list"></div>
-    </section>
+    <section class="map-section"><div id="map"></div></section>
+    <section class="summary-section"><h2>Resumen de la ruta</h2><div id="summary" class="route-list"></div></section>
   </main>
-
-  <footer>
-    <p>&copy; Rutas Ocultas 2025</p>
-  </footer>
-
-  <!-- Leaflet JS (para que funcione el mapa) -->
+  <footer><p>&copy; Rutas Ocultas 2025</p></footer>
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
-  <!-- Script principal todo-en-uno -->
   <script>
-    window.addEventListener('load', () => {
-      // Mostrar mensaje de depuración
-      console.log('¡Página cargada! Inicializando mapa...');
-
-      // 1. Inicializar mapa centrado en Madrid por defecto
-      const map = L.map('map').setView([40.4168, -3.7038], 13);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap'
-      }).addTo(map);
-      console.log('Mapa inicializado correctamente.');
-
-      // 2. Función para geocodificar ciudad usando Nominatim
-      async function geocode(city) {
-        console.log('Geocodificando ciudad:', city);
-        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(city)}`;
-        const data = await fetch(url).then(res => res.json());
-        return data[0]; // { lat, lon, display_name }
-      }
-
-      // 3. Función para pedir POIs a Overpass
-      async function fetchPOIs(lat, lon, interest, radius) {
-        console.log('Buscando POIs en:', lat, lon, 'interés:', interest, 'radio:', radius);
-        const tag = {
-          history: 'tourism=attraction',
-          street_art: 'tourism=artwork',
-          nature: 'leisure=park'
-        }[interest];
-
-        const query = `
-          [out:json][timeout:25];
-          node(around:${radius},${lat},${lon})[${tag}][name];
-          out body 30;
-        `;
-
-        const url = 'https://overpass-api.de/api/interpreter';
-        const response = await fetch(url, {
-          method: 'POST',
-          body: query
-        });
-        const result = await response.json();
-        console.log('POIs obtenidos:', result.elements.length);
-        return result.elements; // array de nodos con {lat, lon, tags.name}
-      }
-
-      // 4. Algoritmo de ordenación según duración
-      function buildRoute(pois, base, duration) {
-        console.log('Construyendo ruta para duración de', duration, 'horas');
-        const baseLat = parseFloat(base.lat);
-        const baseLon = parseFloat(base.lon);
-
-        // Ordena por distancia euclídea al punto de inicio
-        pois.sort((a, b) => {
-          const da = (a.lat - baseLat) ** 2 + (a.lon - baseLon) ** 2;
-          const db = (b.lat - baseLat) ** 2 + (b.lon - baseLon) ** 2;
-          return da - db;
-        });
-
-        // 1h→3, 2h→6, 3h→9
-        const stopsCount = duration * 3;
-
-        const slice = pois.slice(0, stopsCount).map(p => ({
-          lat: p.lat,
-          lon: p.lon,
-          name: p.tags.name
-        }));
-
-        return [{ lat: baseLat, lon: baseLon, name: 'Punto de inicio' }, ...slice];
-      }
-
-      // 5. Dibuja la ruta y los marcadores en el mapa
-      function drawRoute(points) {
-        console.log('Dibujando ruta con', points.length, 'puntos');
-        map.eachLayer(layer => {
-          if (layer instanceof L.Marker || layer instanceof L.Polyline) {
-            map.removeLayer(layer);
-          }
-        });
-
-        const latlngs = points.map(p => [parseFloat(p.lat), parseFloat(p.lon)]);
-        L.polyline(latlngs, { color: '#ff0066' }).addTo(map);
-
-        points.forEach((p, i) => {
-          const marker = L.marker([p.lat, p.lon]).addTo(map);
-          marker.bindPopup(i === 0 ? p.name : p.name);
-        });
-
-        map.fitBounds(latlngs);
-      }
-
-      // 6. Conecta el formulario al flujo completo
-      document.getElementById('form').addEventListener('submit', async e => {
-        e.preventDefault();
-        const city = document.getElementById('city').value.trim();
-        const interest = document.getElementById('interest').value;
-        const duration = parseInt(document.getElementById('duration').value, 10);
-
-        console.log('Formulario enviado:', city, interest, duration);
-
-        try {
-          // Geocodifica
-          const base = await geocode(city);
-          if (!base) throw new Error('Ciudad no encontrada');
-          const radius = duration * 1500; // 1h→1500m, 2h→3000m, 3h→4500m
-
-          // Trae POIs
-          const pois = await fetchPOIs(base.lat, base.lon, interest, radius);
-          if (pois.length === 0) throw new Error('No se encontraron POIs');
-
-          // Genera la ruta
-          const route = buildRoute(pois, base, duration);
-
-          // Dibuja en el mapa
-          drawRoute(route);
-
-          // Muestra el listado de paradas
-          const summaryEl = document.getElementById('summary');
-          let html = '<ul>';
-          route.forEach((p, i) => {
-            html += `<li><strong>${i === 0 ? 'Inicio' : 'Parada ' + i}:</strong> ${p.name}</li>`;
-          });
-          html += '</ul>';
-          summaryEl.innerHTML = html;
-        } catch (err) {
-          console.error(err);
-          alert(err.message);
-        }
-      });
+    window.addEventListener('load',()=>{
+      const map=L.map('map').setView([40.4168,-3.7038],13);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap'}).addTo(map);
+      const dist2=(aLat,aLon,bLat,bLon)=>(aLat-bLat)**2+(aLon-bLon)**2;
+      async function fetchDescription(p){if(!p.tags?.wikipedia)return'';const[lang,title]=p.tags.wikipedia.split(':');try{const url=`https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`;const d=await fetch(url).then(r=>r.json());return d.extract||''}catch{return''}}
+      async function geocode(city){const url=`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(city)}`;const d=await fetch(url).then(r=>r.json());return d[0];}
+      async function fetchPOIs(lat,lon,interest,rad){const filt={history:'[historic~"castle|memorial|monument|ruins|fort"]',street_art:'[tourism=artwork]',nature:'[leisure~"park|garden"]'};const common='[tourism~"museum|attraction|viewpoint"]';const tag=filt[interest]||'';const q=`[out:json][timeout:25];(node(around:${rad},${lat},${lon})${tag}[name];node(around:${rad},${lat},${lon})${common}[name];);out body 50;`;const r=await fetch('https://overpass-api.de/api/interpreter',{method:'POST',body:q}).then(r=>r.json());return r.elements;}
+      function buildRoute(pois,base,dur){const bLat=parseFloat(base.lat),bLon=parseFloat(base.lon);const w=p=>{const t=p.tags||{};if(t.museum||t.tourism==='museum'||t.historic)return 0;if(t.tourism==='attraction')return 1;return 2};pois.sort((a,b)=>{const wa=w(a),wb=w(b);if(wa!==wb)return wa-wb;return dist2(a.lat,a.lon,bLat,bLon)-dist2(b.lat,b.lon,bLat,bLon)});const slice=pois.slice(0,dur*3).map(p=>({lat:p.lat,lon:p.lon,name:p.tags.name,tags:p.tags}));return[{lat:bLat,lon:bLon,name:'Punto de inicio',tags:{}}].concat(slice);}      
+      function draw(map,pts){map.eachLayer(l=>{if(l instanceof L.Marker||l instanceof L.Polyline)map.removeLayer(l)});const ll=pts.map(p=>[+p.lat,+p.lon]);L.polyline(ll,{color:'#ff0066'}).addTo(map);pts.forEach(p=>L.marker([p.lat,p.lon]).addTo(map).bindPopup(p.name));map.fitBounds(ll,{padding:[20,20]});}
+      document.getElementById('form').addEventListener('submit',async e=>{e.preventDefault();const city=document.getElementById('city').value.trim(),interest=document.getElementById('interest').value,dur=parseInt(document.getElementById('duration').value,10);try{const base=await geocode(city);if(!base)throw new Error('Ciudad no encontrada');let rad=dur*1500;let pois=await fetchPOIs(base.lat,base.lon,interest,rad);if(pois.length<dur*3){rad*=2;pois=await fetchPOIs(base.lat,base.lon,interest,rad);}if(!pois.length)throw new Error('Sin puntos de interés');const route=buildRoute(pois,base,dur);draw(map,route);const sum=document.getElementById('summary');sum.innerHTML='<p>Cargando...</p>';const items=await Promise.all(route.map(async(p,i)=>{if(i===0)return`<li><strong>Inicio:</strong> ${p.name}</li>`;const d=await fetchDescription(p);return`<li><strong>Parada ${i}:</strong> ${p.name}<br><em>${d}</em></li>`;}));sum.innerHTML=`<ul>${items.join('')}</ul>`;}catch(err){alert(err.message);}});
     });
   </script>
 </body>
