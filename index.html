@@ -19,7 +19,7 @@
       <form id="form">
         <div class="form-group">
           <label for="city">Ciudad:</label>
-          <input id="city" placeholder="Ej. Valencia" required />
+          <input id="city" placeholder="Ej. Santander" required />
         </div>
         <div class="form-group">
           <label for="interest">Tipo de ruta:</label>
@@ -49,7 +49,8 @@
 
     <section class="summary-section">
       <h2>Resumen de la ruta</h2>
-      <pre id="summary"></pre>
+      <!-- Cambiamos <pre> por un contenedor <div> para insertar <ul> -->
+      <div id="summary" class="route-list"></div>
     </section>
   </main>
 
