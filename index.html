@@ -4,39 +4,64 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Rutas Ocultas</title>
-  <link rel="stylesheet" href="https://unpkg.com/@picostyle/pico@latest/css/pico.min.css">
+  <!-- Pico.css para estilos básicos y responsive -->
+  <link rel="stylesheet" href="https://unpkg.com/@picostyle/pico@latest/css/pico.min.css" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body class="container">
-  <h1>Rutas Ocultas</h1>
-  <p>Descubre itinerarios poco conocidos en cualquier ciudad.</p>
+  <header>
+    <h1>Rutas Ocultas</h1>
+    <p class="subtitle">Descubre itinerarios poco conocidos en cualquier ciudad</p>
+  </header>
 
-  <form id="form">
-    <label for="city">Ciudad:</label>
-    <input id="city" placeholder="Ej. Valencia" required />
+  <main>
+    <section class="form-section">
+      <form id="form">
+        <div class="form-group">
+          <label for="city">Ciudad:</label>
+          <input id="city" placeholder="Ej. Valencia" required />
+        </div>
+        <div class="form-group">
+          <label for="interest">Tipo de ruta:</label>
+          <select id="interest">
+            <option value="history">Historia</option>
+            <option value="street_art">Arte urbano</option>
+            <option value="nature">Naturaleza</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="duration">Duración aproximada:</label>
+          <select id="duration">
+            <option value="1">1 hora</option>
+            <option value="2">2 horas</option>
+            <option value="3">3 horas</option>
+          </select>
+        </div>
+        <div class="form-group full-width">
+          <button id="generate" type="submit">Generar ruta</button>
+        </div>
+      </form>
+    </section>
 
-    <label for="interest">Tipo de ruta:</label>
-    <select id="interest">
-      <option value="history">Historia</option>
-      <option value="street_art">Arte urbano</option>
-      <option value="nature">Naturaleza</option>
-    </select>
+    <section class="map-section">
+      <div id="map"></div>
+    </section>
 
-    <label for="duration">Duración aproximada:</label>
-    <select id="duration">
-      <option value="1">1 hora</option>
-      <option value="2">2 horas</option>
-      <option value="3">3 horas</option>
-    </select>
+    <section class="summary-section">
+      <h2>Resumen de la ruta</h2>
+      <pre id="summary"></pre>
+    </section>
+  </main>
 
-    <button id="generate" type="submit">Generar ruta</button>
-  </form>
-
-  <div id="map" style="height:70vh; margin-top:1rem;"></div>
-  <pre id="summary" style="margin-top:1rem; background:#f4f4f4; padding:1rem; border-radius:4px;"></pre>
+  <footer>
+    <p>&copy; Rutas Ocultas 2025</p>
+  </footer>
 
   <!-- Leaflet CSS y JS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet/dist/leaflet.css"
+  />
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
   <!-- Tu script -->
