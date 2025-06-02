@@ -4,17 +4,30 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Rutas Ocultas</title>
+
   <!-- Pico.css para estilos básicos y responsive -->
-  <link rel="stylesheet" href="https://unpkg.com/@picostyle/pico@latest/css/pico.min.css" />
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/@picostyle/pico@latest/css/pico.min.css"
+  />
+
+  <!-- Estilos personalizados -->
   <link rel="stylesheet" href="style.css" />
+
+  <!-- Leaflet CSS (para que el mapa se vea correctamente) -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet/dist/leaflet.css"
+  />
 </head>
-<body class="container">
+<body>
   <header>
     <h1>Rutas Ocultas</h1>
     <p class="subtitle">Descubre itinerarios poco conocidos en cualquier ciudad</p>
   </header>
 
   <main>
+    <!-- ==== FORMULARIO ==== -->
     <section class="form-section">
       <form id="form">
         <div class="form-group">
@@ -43,13 +56,14 @@
       </form>
     </section>
 
+    <!-- ==== MAPA ==== -->
     <section class="map-section">
       <div id="map"></div>
     </section>
 
+    <!-- ==== RESUMEN ==== -->
     <section class="summary-section">
       <h2>Resumen de la ruta</h2>
-      <!-- Cambiamos <pre> por un contenedor <div> para insertar <ul> -->
       <div id="summary" class="route-list"></div>
     </section>
   </main>
@@ -58,14 +72,10 @@
     <p>&copy; Rutas Ocultas 2025</p>
   </footer>
 
-  <!-- Leaflet CSS y JS -->
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet/dist/leaflet.css"
-  />
+  <!-- Leaflet JS (para que funcione el mapa) -->
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
-  <!-- Tu script -->
+  <!-- Script principal -->
   <script src="script.js"></script>
 </body>
 </html>
