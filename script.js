@@ -1,4 +1,3 @@
-```js
 // 1. Inicializar mapa centrado en Madrid por defecto
 const map = L.map('map').setView([40.4168, -3.7038], 13);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -37,20 +36,30 @@ async function fetchPOIs(lat, lon, interest, radius) {
   return result.elements; // array de nodos con {lat, lon, tags.name, ...}
 }
 
-// 4. Algoritmo de ordenación simple por proximidad euclídea
-function buildRoute(pois, base) {
+// 4. Algoritmo de ordenación simple por proximidad euclídea y ajuste por duración
+function buildRoute(pois, base, duration) {
   // Convierte base.lat/lon a número
   const baseLat = parseFloat(base.lat);
   const baseLon = parseFloat(base.lon);
 
+  // Ordenar POIs por distancia al punto de inicio
   pois.sort((a, b) => {
     const da = (a.lat - baseLat) ** 2 + (a.lon - baseLon) ** 2;
     const db = (b.lat - baseLat) ** 2 + (b.lon - baseLon) ** 2;
     return da - db;
   });
 
-  // Toma los primeros 6 puntos + el punto base al inicio
-  const slice = pois.slice(0, 6).map(p => ({ lat: p.lat, lon: p.lon, name: p.tags.name }));
+  // Definir cuántos lugares mostrar según duración:
+  // 1 hora → 3 paradas ; 2 horas → 6 paradas ; 3 horas → 9 paradas
+  const stopsCount = duration * 3;
+
+  // Toma los primeros stopsCount puntos y añade el punto de inicio al principio
+  const slice = pois.slice(0, stopsCount).map(p => ({
+    lat: p.lat,
+    lon: p.lon,
+    name: p.tags.name
+  }));
+
   return [{ lat: baseLat, lon: baseLon, name: 'Punto de inicio' }, ...slice];
 }
 
@@ -83,19 +92,24 @@ document.getElementById('form').addEventListener('submit', async e => {
 
   // 6.1 Geocode
   const base = await geocode(city);
-  const radius = duration * 1500; // aprox 1 km → 1500 m para 1h a pie
+  const radius = duration * 1500; // aprox 1 km → 1500 m por hora a pie
 
   // 6.2 Traer POIs
   const pois = await fetchPOIs(base.lat, base.lon, interest, radius);
 
-  // 6.3 Generar ruta
-  const route = buildRoute(pois, base);
+  // 6.3 Generar ruta con más paradas según duración
+  const route = buildRoute(pois, base, duration);
 
   // 6.4 Dibujar en el mapa
   drawRoute(route);
 
-  // 6.5 Mostrar un texto con los nombres en el elemento #summary
+  // 6.5 Mostrar listado con nombres en #summary
   const summaryEl = document.getElementById('summary');
-  summaryEl.textContent = `Ruta generada: ${route.map(p => p.name).join(' → ')}`;
+  // Crear un <ul> con cada punto
+  let html = '<ul>';
+  route.forEach((p, i) => {
+    html += `<li><strong>${i === 0 ? 'Inicio' : 'Parada ' + i}:</strong> ${p.name}</li>`;
+  });
+  html += '</ul>';
+  summaryEl.innerHTML = html;
 });
-```
