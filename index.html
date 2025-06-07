@@ -116,4 +116,27 @@
         e.preventDefault();
         const city=document.getElementById('city').value.trim();
         const interest=document.getElementById('interest').value;
-        const dur=parseInt(document.getElementById
+        const dur=parseInt(document.getElementById('duration').value,10);
+        try{
+          const base=await geocode(city);
+          if(!base) throw new Error('Ciudad no encontrada');
+          let rad=dur*1500;
+          let pois=await fetchPOIs(base.lat,base.lon,interest,rad);
+          if(pois.length < dur*3){ rad*=2; pois = await fetchPOIs(base.lat,base.lon,interest,rad); }
+          if(!pois.length) throw new Error('Sin puntos de interés');
+          const route=buildRoute(pois, base, dur);
+          drawRoute(route);
+          const sum=document.getElementById('summary');
+          sum.innerHTML='<p>Cargando...</p>';
+          const items=await Promise.all(route.map(async(p,i)=>{
+            if(i===0) return `<li><strong>Punto de salida:</strong> ${p.name}</li>`;
+            const desc=await fetchDescription(p);
+            return `<li><strong>Parada ${i}:</strong> ${p.name}<br><em>${desc}</em></li>`;
+          }));
+          sum.innerHTML=`<ul>${items.join('')}</ul>`;
+        }catch(err){ alert(err.message); }
+      });
+    });
+  </script>
+</body>
+</html>
