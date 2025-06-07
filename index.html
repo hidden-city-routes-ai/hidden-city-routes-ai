@@ -1,119 +1,157 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Rutas Ocultas</title>
-  <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
   <style>
-    :root {--primary-color:#1e3a5f;--accent-color:#ff0066;--bg-light:#f9f9f9;--text-dark:#333;--text-light:#fff}
-    body{margin:0;background:var(--bg-light);color:var(--text-dark);font-family:"Segoe UI",Tahoma,Geneva,Verdana,sans-serif;line-height:1.6}
-    header{text-align:center;margin:1rem 0}
-    h1{color:var(--primary-color);font-size:2rem;margin:.25rem 0}
-    .subtitle{font-size:1rem;opacity:.8}
-    main{max-width:800px;margin:auto;padding:0 1rem}
-    .form-section{background:var(--text-light);padding:1rem;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,.1);margin-bottom:1.5rem}
-    #form{display:grid;grid-template-columns:1fr 1fr;gap:1rem;align-items:end}
-    .form-group{display:flex;flex-direction:column}
-    .full-width{grid-column:span 2}
-    label{margin-bottom:.25rem;font-weight:700}
-    input,select{padding:.5rem;border:1px solid #ccc;border-radius:4px;font-size:1rem}
-    button{background:var(--primary-color);color:var(--text-light);border:0;padding:.75rem;font-size:1rem;border-radius:4px;cursor:pointer}
-    button:hover{background:#163151}
-    .map-section{margin-bottom:1.5rem}
-    #map{width:100%;height:60vh;min-height:300px;border:2px solid var(--primary-color);border-radius:8px;background:#eaeaea}
-    .summary-section{background:var(--text-light);padding:1rem;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,.1);margin-bottom:2rem}
-    .summary-section h2{margin:0 0 .5rem;color:var(--primary-color);font-size:1.25rem}
-    .route-list ul{list-style:disc;padding-left:1.5rem}
-    .route-list li{margin-bottom:.5rem;font-size:1rem}
-    footer{text-align:center;padding:1rem 0;background:#fff;border-top:1px solid #eee;font-size:.9rem;color:#666}
-    @media(max-width:600px){#form{grid-template-columns:1fr}.full-width{grid-column:span 1}h1{font-size:1.5rem}#map{height:50vh}}
+    :root{
+      --primary:#1e3a5f;
+      --accent:#ff0066;
+    }
+    body{
+      margin:0;
+      padding:0;
+    }
+    #map{height:60vh;min-height:300px;border:2px solid var(--primary);border-radius:6px;}
+    header h1{color:var(--primary);margin-bottom:0;}
+    button{background-color:var(--primary);color:white;}
+    button:hover{background-color:#163151;}
+    .route-list small{color:#555;}
   </style>
 </head>
 <body>
-  <header>
-    <h1>Rutas Ocultas</h1>
-    <p class="subtitle">Descubre itinerarios poco conocidos en cualquier ciudad</p>
-  </header>
-  <main>
-    <section class="form-section">
-      <form id="form">
-        <div class="form-group"><label for="city">Ciudad:</label><input id="city" placeholder="Ej. Santander" required /></div>
-        <div class="form-group"><label for="interest">Tipo de ruta:</label><select id="interest">
-            <option value="history">Historia</option>
-            <option value="street_art">Arte urbano</option>
-            <option value="nature">Naturaleza</option>
-            <option value="esoteric">Ruta esotérica</option>
-          </select></div>
-        <div class="form-group"><label for="duration">Duración aproximada:</label><select id="duration"><option value="1">1 hora</option><option value="2">2 horas</option><option value="3">3 horas</option></select></div>
-        <div class="form-group full-width"><button id="generate" type="submit">Generar ruta</button></div>
-      </form>
-    </section>
-    <section class="map-section"><div id="map"></div></section>
-    <section class="summary-section"><h2>Resumen de la ruta</h2><div id="summary" class="route-list"></div></section>
-  </main>
-  <footer><p>&copy; Rutas Ocultas 2025</p></footer>
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script>
-    window.addEventListener('load',() => {
-      const map = L.map('map').setView([40.4168, -3.7038], 13);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap'}).addTo(map);
-      const toRad = deg => deg * Math.PI / 180;
-      const haversine = (lat1,lon1,lat2,lon2) => {
-        const R = 6371e3;
-        const φ1=toRad(lat1), φ2=toRad(lat2);
-        const Δφ=toRad(lat2-lat1), Δλ=toRad(lon2-lon1);
-        const a=Math.sin(Δφ/2)**2+Math.cos(φ1)*Math.cos(φ2)*Math.sin(Δλ/2)**2;
-        return 2*R*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
-      };
-      async function fetchDescription(p){
-        if(!p.tags?.wikipedia) return '';
-        const [lang,title] = p.tags.wikipedia.split(':');
-        try{const u=`https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`;const d=await fetch(u).then(r=>r.json());return d.extract||'';}catch{return'';}
-      }
-      async function geocode(city){
-        const u=`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(city)}`;
-        const d=await fetch(u).then(r=>r.json());return d[0];
-      }
-      async function fetchPOIs(lat,lon,interest,rad){
-        const filt={
-          history:'[historic~"castle|memorial|monument|ruins|fort"]',
-          street_art:'[tourism=artwork]',
-          nature:'[leisure~"park|garden"]',
-          esoteric:'[amenity=place_of_worship]|[historic=cemetery]|[historic=memorial]'
-        };
-        const common='[tourism~"museum|attraction|viewpoint"]';
-        const tag=filt[interest]||'';
-        const query=`[out:json][timeout:25];(node(around:${rad},${lat},${lon})${tag}[name];node(around:${rad},${lat},${lon})${common}[name];);out body 100;`;
-        const r=await fetch('https://overpass-api.de/api/interpreter',{method:'POST',body:query}).then(r=>r.json());
-        return r.elements;
-      }
-      function buildRoute(pois,base,dur){
-        const bLat=parseFloat(base.lat), bLon=parseFloat(base.lon);
-        pois.forEach(p=>{p._pop= p.tags?.wikipedia?0:1;});
-        pois.sort((a,b)=>a._pop-b._pop);
-        const maxStops=dur*3;
-        const selected=pois.slice(0,maxStops).map(p=>({lat:p.lat,lon:p.lon,name:p.tags.name,tags:p.tags}));
-        const route=[{lat:bLat,lon:bLon,name:base.display_name,tags:{}}];
-        let prevLat=bLat,prevLon=bLon;
-        while(selected.length){
-          selected.sort((a,b)=>haversine(prevLat,prevLon,a.lat,a.lon)-haversine(prevLat,prevLon,b.lat,b.lon));
-          const nxt=selected.shift();
-          route.push(nxt);
-          prevLat=nxt.lat;prevLon=nxt.lon;
-        }
-        return route;
-      }
-      function drawRoute(pts){
-        map.eachLayer(l=>{if(l instanceof L.Marker||l instanceof L.Polyline)map.removeLayer(l);});
-        const ll=pts.map(p=>[+p.lat,+p.lon]);
-        L.polyline(ll,{color:'#ff0066'}).addTo(map);
-        pts.forEach(p=>L.marker([p.lat,p.lon]).addTo(map).bindPopup(p.name));
-        map.fitBounds(ll,{padding:[20,20]});
-      }
-      document.getElementById('form').addEventListener('submit',async e=>{
-        e.preventDefault();
-        const city=document.getElementById('city').value.trim();
-        const interest=document.getElementById('interest').value;
-        const dur=parseInt(document.getElementById
+<header class="container">
+  <h1>Rutas Ocultas</h1>
+  <p>Descubre itinerarios poco conocidos</p>
+</header>
+<main class="container">
+  <form id="form">
+    <label>Ciudad<input id="city" required placeholder="Ej. Santander"></label>
+    <label>Tipo de ruta
+      <select id="interest">
+        <option value="history">Historia</option>
+        <option value="street_art">Arte urbano</option>
+        <option value="nature">Naturaleza</option>
+        <option value="esoteric">Esotérica</option>
+      </select>
+    </label>
+    <label>Duración
+      <select id="duration">
+        <option value="1">1 h</option>
+        <option value="2">2 h</option>
+        <option value="3">3 h</option>
+      </select>
+    </label>
+    <button id="generate" type="submit">Generar ruta</button>
+  </form>
+  <div id="map"></div>
+  <section class="route-list">
+    <h3>Resumen de la ruta</h3>
+    <div id="summary"></div>
+  </section>
+</main>
+<footer class="container">
+  &copy; Rutas Ocultas 2025
+</footer>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+let map, routeLayer;
+window.addEventListener('DOMContentLoaded', () => {
+  map = L.map('map').setView([40.4168, -3.7038], 13);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution:'© OpenStreetMap'}).addTo(map);
+  routeLayer = L.layerGroup().addTo(map);
+});
+const toRad = d => d * Math.PI / 180;
+const haversine = (lat1,lon1,lat2,lon2) => {
+  const R = 6371e3;
+  const a = Math.sin((toRad(lat2-lat1))/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin((toRad(lon2-lon1))/2)**2;
+  return 2*R*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+};
+async function geocode(city){
+  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(city)}`;
+  const data = await fetch(url).then(r=>r.json());
+  return data[0];
+}
+async function fetchPOIs(lat,lon,type,rad=3000){
+  const filters={
+    history:'[historic]',
+    street_art:'[tourism=artwork]',
+    nature:'[leisure~"park|garden"]',
+    esoteric:'[amenity=place_of_worship]|[historic=cemetery]|[historic=memorial]'
+  };
+  const generic='[tourism~"museum|attraction|viewpoint"]';
+  const f=filters[type]||'';
+  const query=`[out:json][timeout:25];(node(around:${rad},${lat},${lon})${f}[name];node(around:${rad},${lat},${lon})${generic}[name];);out body;`;
+  const resp=await fetch('https://overpass-api.de/api/interpreter',{method:'POST',body:query});
+  const json=await resp.json();
+  return json.elements||[];
+}
+function buildRoute(pois, base, dur){
+  const startLat=parseFloat(base.lat), startLon=parseFloat(base.lon);
+  const maxStops=dur*3;
+  pois.forEach(p=>{
+    p._w = (p.tags.wikipedia||p.tags.historic||p.tags.tourism==='museum')?0:(p.tags.tourism==='attraction'?1:2);
+  });
+  pois.sort((a,b)=>a._w-b._w);
+  const candidates=pois.slice(0,maxStops*3);
+  const route=[{lat:startLat,lon:startLon,name:base.display_name,tags:{}}];
+  let prevLat=startLat,prevLon=startLon,dist=0;
+  while(candidates.length && route.length<=maxStops){
+    candidates.sort((a,b)=>haversine(prevLat,prevLon,a.lat,a.lon)-haversine(prevLat,prevLon,b.lat,b.lon));
+    const next=candidates.shift();
+    const d=haversine(prevLat,prevLon,next.lat,next.lon);
+    if(dist+d > dur*4*1000) continue;
+    dist += d;
+    route.push({lat:next.lat,lon:next.lon,name:next.tags.name||'POI',tags:next.tags});
+    prevLat=next.lat; prevLon=next.lon;
+  }
+  return route;
+}
+function drawRoute(pts){
+  routeLayer.clearLayers();
+  const latlngs=pts.map(p=>[+p.lat,+p.lon]);
+  L.polyline(latlngs,{color:'#ff0066'}).addTo(routeLayer);
+  pts.forEach((p,i)=>{
+    L.marker([p.lat,p.lon]).addTo(routeLayer).bindPopup(`${i}. ${p.name}`);
+  });
+  map.fitBounds(latlngs,{padding:[20,20]});
+}
+async function fetchDescription(poi){
+  if(!poi.tags?.wikipedia) return '';
+  const [lang,title]=poi.tags.wikipedia.split(':');
+  try{
+    const url=`https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`;
+    const data=await fetch(url).then(r=>r.json());
+    return data.extract||'';
+  }catch{
+    return '';
+  }
+}
+async function generate(e){
+  e.preventDefault();
+  const city=document.getElementById('city').value.trim();
+  const type=document.getElementById('interest').value;
+  const dur=parseInt(document.getElementById('duration').value,10);
+  const base=await geocode(city);
+  if(!base) return alert('Ciudad no encontrada');
+  const pois=await fetchPOIs(base.lat,base.lon,type,3000);
+  const route=buildRoute(pois,base,dur);
+  drawRoute(route);
+  const list=document.createElement('ul');
+  list.innerHTML=`<li>Punto de salida: ${base.display_name}</li>`;
+  for(let i=1;i<route.length;i++){
+    const desc=await fetchDescription(route[i]);
+    const item=document.createElement('li');
+    item.innerHTML=`Parada ${i}: ${route[i].name}${desc?`<br><small>${desc}</small>`:''}`;
+    list.appendChild(item);
+  }
+  document.getElementById('summary').innerHTML='';
+  document.getElementById('summary').appendChild(list);
+}
+document.getElementById('form').addEventListener('submit',generate);
+</script>
+</body>
+</html>
